@@ -29,6 +29,11 @@ enum layers {
     _ADJUST,
 };
 
+enum custom_keycodes{
+   LF1 = SAFE_RANGE,
+   LF2,
+ };
+
 #define RAISE MO(_RAISE)
 #define LOWER MO(_LOWER)
 
@@ -61,7 +66,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
   [_ADJUST] = LAYOUT(
   KC_F1  , KC_F2,   KC_F3,   KC_F4,  KC_F5,   KC_F6,                      KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,
-  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
+  LF1    , LF2  , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,                   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
   XXXXXXX, KC_PGUP, KC_PGDOWN, KC_END, KC_HOME, XXXXXXX,                  XXXXXXX, XXXXXXX, RGB_TOG, RGB_HUI, RGB_SAI, RGB_VAI,
   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, RGB_MOD, RGB_HUD, RGB_SAD, RGB_VAD,
                              KC_LALT, KC_LGUI, LOWER,  KC_SPC,   KC_ENT,   RAISE,   KC_BSPC, KC_RGUI
@@ -410,7 +415,7 @@ void render_nerv(void){
   oled_write_raw_P(nerv, sizeof(nerv));
 }
 
-void oled_task_user(void) {
+bool oled_task_user(void) {
   update_log();
   if (is_keyboard_master()) {
     render_status_main();  // Renders the current keyboard state (layer, lock, caps, scroll, etc)
@@ -419,9 +424,30 @@ void oled_task_user(void) {
     //render_shinji_walk((timer_read() / 300 ) % 4);
     //render_nerv();
   //}
+  return false;
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+    case LF1:
+        if (record->event.pressed) {
+            // when keycode QMKBEST is pressed
+            SEND_STRING(SS_DOWN(X_LCTRL) SS_DOWN(X_LALT) SS_DOWN(X_F1) );
+        } else {
+            // when keycode QMKBEST is released
+        }
+        break;
+    
+   case LF2:
+      if (record->event.pressed) {
+          // when keycode QMKBEST is pressed
+          SEND_STRING(SS_DOWN(X_LCTRL) SS_DOWN(X_LALT) SS_DOWN(X_F2) );
+      } else {
+          // when keycode QMKBEST is released
+      }
+      break;
+    }
+    
     if (record->event.pressed) {
         add_keylog(keycode);
     }
@@ -437,16 +463,16 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     if(IS_LAYER_ON(_RAISE)) { // on Raise layer
       // Cursor control
       if (clockwise) {
-        tap_code(KC_MPRV);
-      } else {
         tap_code(KC_MNXT);
+      } else {
+        tap_code(KC_MPRV);
       }
     }
     else {
       if (clockwise) {
-          tap_code(KC_VOLD);
-      } else {
           tap_code(KC_VOLU);
+      } else {
+          tap_code(KC_VOLD);
       }
     }
   }
